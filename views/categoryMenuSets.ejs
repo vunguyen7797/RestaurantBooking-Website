@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<%- include('partials/head') %>
+
+<body class="bg-white text-gray-600 work-sans leading-normal text-base tracking-normal">
+
+    <%- include('partials/header') %>
+
+    <div class="w-full h-48 category-menu-top-image"></div>
+    <div class="container mx-auto flex items-center flex-wrap pt-4 pb-12" style="top: -5rem; position: relative;">
+        <div class="grid grid-cols-12 gap-4 w-full">
+            <div class="col-span-12">
+                <figure class="md:flex bg-white-100 p-8 md:p-0 ">
+                    <div class="py-24 text-center space-y-4 w-full text-center">
+                        <h1 class="text-6xl font-black text-red-500"><%= catName.name %></h1>
+                        <h2 class="text-3xl">Menu category</h2>
+                        <hr style="border-top: dotted;" class="mx-32">
+                        <div>
+                            <div class="grid grid-cols-2 w-full">
+
+                                <% for( const menuSet of menuSets ) { %>   
+                                    <div class="text-left px-32 pt-12">
+                                        <p class="text-4xl font-black font-bold pb-2 underline"><%= menuSet.name %></p>
+                                   
+                                        <ul class="pb-2 text-2xl">
+                                            <% for( const menuContent of menuContents ) { %>   
+                                                <% if( menuContent.key === menuSet.menuID ) { %>  
+                                                    <% for( const dish of menuContent.value ) { %> 
+                                                        <li><%= dish.name %></li>
+                                                        <!-- <li>Súp bắp cua</li>
+                                                        <li>Gỏi ngó sen tôm thịt + Bánh phồng</li>
+                                                        <li>Gà hấp lá chanh</li>
+                                                        <li>Lẩu thập cẩm + Bún tươi</li>
+                                                        <li>Râu câu</li> -->
+                                                <% } %>
+                                                <% } %>
+                                                <% } %>
+                                        </ul>
+                                        <p class="pb-2 font-black">($<%= menuSet.price %>/Table)</p>
+                                        <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-4 rounded">Book now</button>
+                                    </div>
+
+                                <% } %>
+                              
+                            
+                            </div>
+                        </div>
+                    </div>
+                </figure>
+            </div>
+            <!-- <div class="col-span-3">
+                <div class="mx-2 my-2 bg-gray-100 w-full">
+                <img class="shadow-lg w-full" src="https://thehivevilla.com/wp-content/uploads/2018/01/mam-co-tet-4.jpg">
+                </div>
+            </div> -->
+        </div>
+    </div>
+
+    <%- include('partials/footer') %>
+
+</body>
+
+</html>
