@@ -11,13 +11,12 @@ class MenuSetsModel {
         try{
             const sql = `
                 INSERT INTO MenuSets
-                    (menuID, name, numberDishes, price)
+                    (menuID, name, numberDishes, price, category)
                 VALUES
-                    (@menuID, @name, @numberDishes, @price)
+                    (@menuID, @name, @numberDishes, @price, @categories)
             `;
+         
             const createMenuSet = db.prepare(sql);
-
-            menuSet.menuID = uuidV4();
             createMenuSet.run(menuSet);
             return true;
         } catch(err){
@@ -85,6 +84,21 @@ class MenuSetsModel {
         }
     }
 
+    updateMenuSetByID (menuSet) {
+        try {
+            const sql = `
+                UPDATE MenuSets
+                SET name = @name, price = @price, category = @categories
+                WHERE menuID = @menuID
+            `;
+            db.prepare(sql).run(menuSet);
+            return true;
+        } catch (err) {          // if there was any error
+            console.error(err);  // then log it
+            return false;
+        }
+    }
+
     getAllMenuSet (catId) {
         try {
             const sql = `
@@ -99,18 +113,33 @@ class MenuSetsModel {
         }
     }
 
-    getMenuSet (menuID) {
+    getMenuSetById(menuID){
+        try {
+            const sql = `
+                SELECT * FROM MenuSets WHERE menuID  = @menuID
+            `;
+           
+            return db.prepare(sql).get({menuID});;
+        } catch (err) {    // if there was any error
+            console.error(err);  // then log it
+            return ;        // return false to indicate failure
+        }
+    }
+
+    getMenuSets () {
         try {
             const sql = `
                 SELECT * FROM MenuSets
             `;
-            db.prepare(sql).get({menuID});
-            return true;
+            
+            return db.prepare(sql).all({});;
         } catch (err) {          // if there was any error
             console.error(err);  // then log it
-            return false;        // return false to indicate failure
+            return [];        // return false to indicate failure
         }
     }
+
+
 
     getMenuSetPrice (menuID) {
         try {

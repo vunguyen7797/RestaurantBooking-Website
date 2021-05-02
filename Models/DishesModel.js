@@ -16,8 +16,7 @@ class DishesModel {
                     (@dishID, @name, @description, @price, @dishType, @photoUrl)
             `;
             const createDish = db.prepare(sql);
-
-            dish.dishID = uuidV4();
+         
             createDish.run(dish);
             return true;
         } catch(err){
@@ -73,15 +72,32 @@ class DishesModel {
 
     deleteDish (dishID) {
         try {
+            console.log(dishID);
             const sql = `
                 DELETE FROM Dishes
                 WHERE dishID=@dishID
             `;
             db.prepare(sql).run({dishID});
+
             return true;
         } catch (err) {          // if there was any error
             console.error(err);  // then log it
             return false;        // return false to indicate failure
+        }
+    }
+
+    updateDishByID (dish) {
+        try {
+            const sql = `
+                UPDATE Dishes
+                SET name = @name, description = @description, price = @price, dishType = @dishType, photoUrl = @photoUrl
+                WHERE dishID = @dishID
+            `;
+            db.prepare(sql).run(dish);
+            return true;
+        } catch (err) {          // if there was any error
+            console.error(err);  // then log it
+            return false;
         }
     }
 
@@ -107,7 +123,7 @@ class DishesModel {
             return getAllDishes.all();
         } catch (err) {          // if there was any error
             console.error(err);  // then log it
-            return false;        // return false to indicate failure
+            return [];        // return false to indicate failure
         }
     }
 
@@ -151,5 +167,5 @@ class DishesModel {
     }
 }
 
-const dishesModel = new DishesModel(db);
+
 exports.dishesModel = new DishesModel(db);

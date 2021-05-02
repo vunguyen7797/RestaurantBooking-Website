@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<%- include('partials/head') %>
+
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss/dist/tailwind.min.css" rel="stylesheet">  
+
+
+<body class="bg-white text-gray-600 work-sans leading-normal text-base tracking-normal">
+
+
+
+    <%- include('partials/header') %>
+
+    <div class="grid grid-cols-12 w-full h-full pt-12">
+        <%- include('partials/dashboardNav') %>
+        <div class="col-span-10 rounded h-full bg-gray-100 text-center mb-8 mr-10 ml-10">
+            <div class="grid grid-cols-12 w-full pt-8">
+                <div class="col-span-10 text-left">
+                    <p class="text-4xl text-black pl-8">Dishes Manager</p>
+                </div>
+                <div class="col-span-2 text-left items-end">
+                    <a href="/add-dish" > 
+                    <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 w-10/12 rounded mr-4">+ New Product</button></a>
+                </div>
+            </div>
+
+
+
+
+
+            <div id="dishList" class="grid grid-cols-12 gap-12  py-8 mr-10 ml-10">
+                <% for( const dish of allDishes ) { %>   
+                    <div id ='<%- dish.dishID %>' class="col-span-4 rounded hover:grow hover:shadow-lg h-45 bg-white-100 text-center">
+                        <img class="rounded"  src="https://cdn.tgdd.vn/2020/07/CookRecipe/Avatar/muc-chien-gion-thumbnail.jpg" alt="">
+                            <p class="pt-3 font-black text-s"><%= dish.name %></p>
+                            <p class="py-3 font-black text-red-500 text-xl">$<%= dish.price %></p>
+                            <button id="edit" class="my-3 bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-4 rounded">Edit</button>
+
+
+                           <button id="del"  class="my-3 bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-4 rounded">Delete</button>
+                 
+                 
+
+                    </div>
+                    
+                <% } %>
+
+                <script src="js/adminDishes.js"> 
+                            
+                </script>
+            </div>
+
+                        <!--Modal-->
+            <div class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center">
+                <div class="modal-overlay absolute w-full h-full bg-gray-900 opacity-50"></div>
+                
+                <div class="modal-container bg-white w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto">
+                
+           
+
+                <!-- Add margin if you want to see some of the overlay behind the modal-->
+                <div class="modal-content py-4 text-left px-6">
+                    <!--Title-->
+                    <div class="flex justify-between items-center pb-3">
+                    <p class="text-2xl font-bold">EDIT DISH</p>
+              
+                    </div>
+
+                    <!--Body-->
+                    <form id = "editform" class="w-full justify-items-center py-12" method="post">
+                        <div class="flex items-center  mb-8">
+                            <div class="md:w-1/5">
+                                <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" for="inline-full-name">
+                                  Dish Name
+                                </label>
+                              </div>
+                              <div class="md:w-3/5">
+                                <input class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-red-500" id="name" type="text" value="" name="name">
+                              </div>
+                        </div>
+                        <div class="flex items-center mb-8">
+                          <div class="md:w-1/5">
+                              <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" for="inline-full-name">
+                                Desc
+                              </label>
+                            </div>
+                            <div class="md:w-3/5">
+                              <input class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-red-500" id="description" type="text" value="" name="description">
+                            </div>
+                      </div>
+                      <div class="flex items-center  mb-8">
+                        <div class="md:w-1/5">
+                            <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" for="inline-full-name">
+                              Dish Type
+                            </label>
+                          </div>
+                          <div class="md:w-3/5">
+                            <input class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-red-500" id="dishType" type="text" value="" name="dishType">
+                          </div>
+                    </div>
+                        <div class="flex items-center  mb-8">
+                            <div class="md:w-1/5">
+                                <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" for="inline-full-name">
+                                  Price
+                                </label>
+                              </div>
+                              <div class="md:w-3/5">
+                                <input class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-red-500" id="price" type="text" value="" name="price">
+                              </div>
+                        </div>
+                        <div class="flex items-center mb-8">
+                            <div class="md:w-1/5">
+                                <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" for="inline-full-name">
+                                  Photo Url
+                                </label>
+                              </div>
+                              <!-- <div class="md:w-4/5">
+                                <input type="file" id="displayImage" name="displayImage">
+                              </div> -->
+                              <div class="md:w-3/5">
+                                <input class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-red-500" id="photoUrl" type="text" value="" name="photoUrl">
+                              </div>
+                        </div>
+                      
+                
+
+                    <!--Footer-->
+                    <div class="flex justify-end pt-2">
+                    <button class="px-4 bg-transparent p-3 rounded-lg text-red-500 hover:bg-gray-100 hover:text-red-400 mr-2" type="submit">Update</button>
+                    <button id="modal-close" class=" px-4 bg-red-500 p-3 rounded-lg text-white hover:bg-red-400">Close</button>
+                    </div>
+                </form>
+                </div>
+                </div>
+            </div>
+
+            
+           
+        </div>
+        
+    </div>
+
+    <%- include('partials/footer') %>
+
+</body>
+
+</html>

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<%- include('partials/head') %>
+
+<body class="bg-white text-gray-600 work-sans leading-normal text-base tracking-normal">
+
+    <%- include('partials/header') %>
+
+    <div class="grid grid-cols-12 w-full h-full pt-12">
+   
+        <%- include('partials/dashboardNav') %>
+        <div class="col-span-10 rounded h-full bg-gray-100 text-center mb-8 mr-10 ml-10">
+            <div class="grid grid-cols-12 w-full pt-8">
+                <div class="col-span-10 text-left">
+                    <p class="text-4xl text-black pl-8">Menu Sets Manager</p>
+                </div>
+                <div class="col-span-2 text-left items-end">
+                    <a href="/add-menuset" > 
+                    <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 w-10/12 rounded mr-4">+ New Menu Set</button></a>
+                </div>
+            </div>
+
+           
+                
+                <form id="optionform" method="GET">
+                    <label for="categories">Choose a category:</label>
+                    <select name="categories" id="categories">
+                        <% for( const menu of categories ) { %>   
+                      <option value=<%= menu.catId %>><%= menu.name %></option>
+                      <% } %>
+                    </select>
+                    <br><br>
+                    <input class="my-3 bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-4 rounded" type="submit" value="Submit">
+                  </form>
+                <br>
+
+                <h4>------------------------- o0o -------------------------</h4><br>
+                  <h4 id="catName" class="text-xl font-black text-red-500"><%= catName.name %></h4>
+                  <h5 class="text-xl">Menu category</h5>
+                  <% if( menuSets.length > 0 ) { %>   
+                        <div id="menuSetList" class="grid grid-cols-2 w-full">
+                                <% for( const menuSet of menuSets ) { %>   
+                                    <div id ='<%- menuSet.menuID %>' class="text-left px-32 pt-12">
+                                        <p class="text-xl font-black font-bold pb-2 underline"><%= menuSet.name %></p>
+                                
+                                        <ul class="pb-2 text-m">
+                                            
+                                            <% for( const menuContent of menuContents ) { %>   
+                                                <% if( menuContent.key === menuSet.menuID ) { %>  
+                                                    <% for( const dish of menuContent.value ) { %> 
+                                                        <li><%= dish.name %></li>
+                                                    
+                                                <% } %>
+                                                <% } %>
+                                                <% } %>
+                                        </ul>
+                                        <p class="pb-2 font-black">($<%= menuSet.price %>/Table)</p>
+                                        <button id="edit" class="my-3 bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-4 rounded">Edit</button>
+                                        <button id="del"  class="my-3 bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-4 rounded">Delete</button>
+                                    </div>
+
+                                <% } %>
+                           
+                    </div>
+            <% } %>
+            <% if( menuSets.length === 0 ) { %>   
+                <br><br><p>THERE IS NO DATA FOR THIS CATEGORY OR CATEGORY HAS NOT BEEN SELECTED</p>
+                <% } %>
+        </div>
+
+                         <!--Modal-->
+                         <div class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center">
+                            <div class="modal-overlay absolute w-full h-full bg-gray-900 opacity-50"></div>
+                            
+                            <div class="modal-container bg-white w-full md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto">
+                            
+                       
+            
+                            <!-- Add margin if you want to see some of the overlay behind the modal-->
+                            <div class="modal-content py-4 text-left px-6">
+                                <!--Title-->
+                                <div class="flex justify-between items-center pb-3">
+                                <p class="text-2xl font-bold">EDIT MENU SET</p>
+                          
+                                </div>
+            
+                                <!--Body-->
+                                <form class="w-full justify-items-center py-12" id = "editform" method="post">
+                                    <div class="flex items-center w-3/3 mb-8">
+                                        <div class="md:w-1/5">
+                                            <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" for="inline-full-name">
+                                              Menu Set Name
+                                            </label>
+                                          </div>
+                                          <div class="md:w-4/5">
+                                            <input class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-red-500" id="name" type="text" value="" name="name">
+                                          </div>
+                                    </div>
+                                    <div class="flex items-center w-3/3 mb-8">
+                                      <div class="md:w-1/5">
+                                          <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" for="inline-full-name">
+                                            Category
+                                          </label>
+                                        </div>
+                                        <div class="md:w-4/5">
+                                            <select name="categories" id="categories">
+                                                <% for( const menu of categories ) { %>   
+                                              <option value=<%= menu.catId %>><%= menu.name %></option>
+                                              <% } %>
+                                            </select>                
+                                        </div>
+                                  </div>
+                                  <div class="flex items-center w-3/3 mb-8">
+                                    <div class="md:w-1/5">
+                                        <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" for="inline-full-name">
+                                          Menu Set Price
+                                        </label>
+                                      </div>
+                                      <div class="md:w-4/5">
+                                        <input class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-red-500" id="price" type="text" value="" name="price">
+                                      </div>
+                                </div>
+                                <div class="flex items-center w-3/3 mb-8 mr-12">
+                                        <div class="md:w-1/5">
+                                            <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" for="inline-full-name">
+                                              Dish 1
+                                            </label>
+                                          </div>
+                                          <div class="md:w-4/5">
+                                            <select name="dish1" id="dish1">
+                                                <% for( const dish of dishes ) { %>   
+                                              <option value=<%= dish.dishID %>><%= dish.name %></option>
+                                              <% } %>
+                                            </select>                           
+                                         </div>
+                                    </div>
+                                    <div class="flex items-center w-3/3 mb-8 mr-12">
+                                        <div class="md:w-1/5">
+                                            <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" for="inline-full-name">
+                                              Dish 2
+                                            </label>
+                                          </div>
+                                          <div class="md:w-4/5">
+                                            <select name="dish2" id="dish2">
+                                                <% for( const dish of dishes ) { %>   
+                                              <option value=<%= dish.dishID %>><%= dish.name %></option>
+                                              <% } %>
+                                            </select>                    </div>
+                                    </div>
+                                    <div class="flex items-center w-3/3 mb-8 mr-12">
+                                        <div class="md:w-1/5">
+                                            <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" for="inline-full-name">
+                                              Dish 3
+                                            </label>
+                                          </div>
+                                          <div class="md:w-4/5">
+                                            <select name="dish3" id="dish3">
+                                                <% for( const dish of dishes ) { %>   
+                                              <option value=<%= dish.dishID %>><%= dish.name %></option>
+                                              <% } %>
+                                            </select>                    </div>
+                                    </div>
+                                    <div class="flex items-center w-3/3 mb-8 mr-12">
+                                        <div class="md:w-1/5">
+                                            <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" for="inline-full-name">
+                                              Dish 4
+                                            </label>
+                                          </div>
+                                          <div class="md:w-4/5">
+                                            <select name="dish4" id="dish4">
+                                                <% for( const dish of dishes ) { %>   
+                                              <option value=<%= dish.dishID %>><%= dish.name %></option>
+                                              <% } %>
+                                            </select>                    </div>
+                                    </div>
+                                    <div class="flex items-center w-3/3 mb-8 mr-12">
+                                        <div class="md:w-1/5">
+                                            <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" for="inline-full-name">
+                                              Dish 5
+                                            </label>
+                                          </div>
+                                          <div class="md:w-4/5">
+                                            <select name="dish5" id="dish5">
+                                                <% for( const dish of dishes ) { %>   
+                                              <option value=<%= dish.dishID %>><%= dish.name %></option>
+                                              <% } %>
+                                            </select>                    </div>
+                                    </div>
+                                    
+                                       <!--Footer-->
+                            <div class="flex justify-end pt-2">
+                                <button class="px-4 bg-transparent p-3 rounded-lg text-red-500 hover:bg-gray-100 hover:text-red-400 mr-2" type="submit">Update</button>
+                            
+                                </div>
+                                </form>
+                            </div>
+                            </div>
+                        </div>
+            
+    
+        <script src="/js/adminMenuSet.js"> 
+             
+        </script>
+     
+    </div>
+
+    <%- include('partials/footer') %>
+
+</body>
+
+</html>

@@ -1,6 +1,7 @@
 "use strict";
 const Database = require('better-sqlite3');
-const db = new Database('Restaurant-booking-web-class/Database/RestaurantBooking.db');
+
+const db = new Database('Database/RestaurantBooking.db');
 
 // Signal handlers to close the database when the code
 // terminates (whether successfully or due to a signal)

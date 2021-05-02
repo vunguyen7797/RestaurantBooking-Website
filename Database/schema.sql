@@ -11,14 +11,16 @@ CREATE TABLE IF NOT EXISTS MenuSets (
     menuID TEXT PRIMARY KEY,
     name TEXT UNIQUE NOT NULL,
     numberDishes INTEGER NOT NULL CHECK (numberDishes > 0),
-    price REAL DEFAULT 0.0
+    price REAL DEFAULT 0.0,
+    category TEXT,
+    FOREIGN KEY (category) REFERENCES MenuCategories(catId) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS MenuContent (
     menuID TEXT,
     dish TEXT,
     FOREIGN KEY (dish) REFERENCES Dishes(dishID),
-    FOREIGN KEY (menuID) REFERENCES MenuSets(menuID)
+    FOREIGN KEY (menuID) REFERENCES MenuSets(menuID) ON DELETE CASCADE
 );
 
 
@@ -50,6 +52,33 @@ CREATE TABLE IF NOT EXISTS MenuCategories(
     photoUrl TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS ShoppingCarts(
+    cartId TEXT,
+    userID TEXT,
+    totalPrice REAL DEFAULT 0.0,
+    FOREIGN KEY (userID) REFERENCES Users(userID)
+);
+
+CREATE TABLE IF NOT EXISTS ShoppingCartItem (
+    cartId TEXT,
+    itemId TEXT,
+    FOREIGN KEY (cartId) REFERENCES ShoppingCarts(cartId)
+);
+
+CREATE TABLE IF NOT EXISTS ShoppingMenuSetItem(
+    menuId,
+    itemId TEXT,
+    FOREIGN KEY (itemId) REFERENCES ShoppingCartItem(itemId),
+    FOREIGN KEY (menuId) REFERENCES MenuSets(menuID)
+);
+
+CREATE TABLE IF NOT EXISTS ShoppingSingleDishItem(
+    dishId,
+    itemId TEXT,
+    FOREIGN KEY (itemId) REFERENCES ShoppingCartItem(itemId),
+    FOREIGN KEY (dishId) REFERENCES Dishes(dishID)
+);
+
 -- INSERT INTO MenuCategories (catId, name, photoUrl) VALUES ("c1", "Wedding Party", "https://firebasestorage.googleapis.com/v0/b/qpv-face-scanner.appspot.com/o/webproject%2Fco-dam-cuoi.jpg?alt=media&token=b336f8fe-d574-4b3e-86bc-2c26f27a966e");
 -- INSERT INTO MenuCategories (catId, name, photoUrl) VALUES ("c2", "New House Party", "https://firebasestorage.googleapis.com/v0/b/qpv-face-scanner.appspot.com/o/webproject%2Ftiec-tan-gia-ngoai-troi.jpg?alt=media&token=05bb0fea-3f92-4604-b094-3642370d53da");
 -- INSERT INTO MenuCategories (catId, name, photoUrl) VALUES ("c3", "Vegan Menus", "https://firebasestorage.googleapis.com/v0/b/qpv-face-scanner.appspot.com/o/webproject%2Fthuc-don-chay-4-mon-sieu-de-lam-chi-voi-65k-3.jpg?alt=media&token=704fdd61-9979-470c-a2c6-9b68dd9cbb9d");
@@ -60,4 +89,3 @@ CREATE TABLE IF NOT EXISTS MenuCategories(
 -- INSERT INTO MenuCategories (catId, name, photoUrl) VALUES ("c7", "Baby Shower Party", "https://firebasestorage.googleapis.com/v0/b/qpv-face-scanner.appspot.com/o/webproject%2Ftrang-tri-ban-tiec-thoi-noi-cho-be-khoi.jpg?alt=media&token=47dbdaaf-503c-4ae0-9601-26e4afd50c42");
 -- INSERT INTO MenuCategories (catId, name, photoUrl) VALUES ("c8", "Exclusive Menus", "https://firebasestorage.googleapis.com/v0/b/qpv-face-scanner.appspot.com/o/webproject%2Ftradition-vietnamese-new-year-food-fi.jpg?alt=media&token=5eab9087-d026-467e-93ac-ce2c15340cfa");
 
-INSERT INTO Dishes (dishID, name, discription, )
