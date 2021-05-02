@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<%- include('partials/head') %>
+
+<body class="bg-white text-gray-600 work-sans leading-normal text-base tracking-normal">
+
+    <%- include('partials/header') %>
+
+    <div class="container mx-auto flex items-center flex-wrap pt-12">
+        <h1 class="text-4xl text-black">New Menu Set</h1>
+        <form class="w-full justify-items-center py-12" action="/add-menuset" method="post">
+            <div class="flex items-center w-2/3 mb-8">
+                <div class="md:w-1/5">
+                    <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" for="inline-full-name">
+                      Menu Set Name
+                    </label>
+                  </div>
+                  <div class="md:w-4/5">
+                    <input class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-red-500" id="name" type="text" value="" name="name">
+                  </div>
+            </div>
+            <div class="flex items-center w-2/3 mb-8">
+              <div class="md:w-1/5">
+                  <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" for="inline-full-name">
+                    Category
+                  </label>
+                </div>
+                <div class="md:w-4/5">
+                    <select name="categories" id="categories">
+                        <% for( const menu of categories ) { %>   
+                      <option value=<%= menu.catId %>><%= menu.name %></option>
+                      <% } %>
+                    </select>                
+                </div>
+          </div>
+          <div class="flex items-center w-2/3 mb-8">
+            <div class="md:w-1/5">
+                <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" for="inline-full-name">
+                  Menu Set Price
+                </label>
+              </div>
+              <div class="md:w-4/5">
+                <input class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-red-500" id="price" type="text" value="" name="price">
+              </div>
+        </div>
+            <div class="flex items-center w-2/3 mb-8">
+                <div class="md:w-1/5">
+                    <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" for="inline-full-name">
+                      Dish 1
+                    </label>
+                  </div>
+                  <div class="md:w-4/5">
+                    <select name="dish1" id="dish1">
+                        <% for( const dish of dishes ) { %>   
+                      <option value=<%= dish.dishID %>><%= dish.name %></option>
+                      <% } %>
+                    </select>                           
+                 </div>
+            </div>
+            <div class="flex items-center w-2/3 mb-8">
+                <div class="md:w-1/5">
+                    <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" for="inline-full-name">
+                      Dish 2
+                    </label>
+                  </div>
+                  <div class="md:w-4/5">
+                    <select name="dish2" id="dish2">
+                        <% for( const dish of dishes ) { %>   
+                      <option value=<%= dish.dishID %>><%= dish.name %></option>
+                      <% } %>
+                    </select>                    </div>
+            </div>
+            <div class="flex items-center w-2/3 mb-8">
+                <div class="md:w-1/5">
+                    <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" for="inline-full-name">
+                      Dish 3
+                    </label>
+                  </div>
+                  <div class="md:w-4/5">
+                    <select name="dish3" id="dish3">
+                        <% for( const dish of dishes ) { %>   
+                      <option value=<%= dish.dishID %>><%= dish.name %></option>
+                      <% } %>
+                    </select>                    </div>
+            </div>
+            <div class="flex items-center w-2/3 mb-8">
+                <div class="md:w-1/5">
+                    <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" for="inline-full-name">
+                      Dish 4
+                    </label>
+                  </div>
+                  <div class="md:w-4/5">
+                    <select name="dish4" id="dish4">
+                        <% for( const dish of dishes ) { %>   
+                      <option value=<%= dish.dishID %>><%= dish.name %></option>
+                      <% } %>
+                    </select>                    </div>
+            </div>
+            <div class="flex items-center w-2/3 mb-8">
+                <div class="md:w-1/5">
+                    <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" for="inline-full-name">
+                      Dish 5
+                    </label>
+                  </div>
+                  <div class="md:w-4/5">
+                    <select name="dish5" id="dish5">
+                        <% for( const dish of dishes ) { %>   
+                      <option value=<%= dish.dishID %>><%= dish.name %></option>
+                      <% } %>
+                    </select>                    </div>
+            </div>
+            
+            <div class="flex items-center w-2/3 mb-8">
+                <div class="md:w-1/5">
+
+                  </div>
+                  <div class="md:w-4/5">
+                    <button class="shadow bg-red-500 hover:bg-red-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded" type="submit">
+                        Submit
+                      </button>
+                  </div>
+            </div>
+        </form>
+    </div>
+
+    <%- include('partials/footer') %>
+
+</body>
+
+</html>

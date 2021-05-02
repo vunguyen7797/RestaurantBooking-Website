@@ -7,7 +7,7 @@ class MenuContentModel {
         this.db = db;
     }
 
-    createMenuSet (menuContent) {
+    addMenuContent (menuContent) {
         try{
             const sql = `
                 INSERT INTO MenuContent
@@ -15,10 +15,10 @@ class MenuContentModel {
                 VALUES
                     (@menuID, @dish)
             `;
-            const createMenuContent = db.prepare(sql);
+            const addMenuContent = db.prepare(sql);
 
-            menuContent.menuID = uuidV4();
-            createMenuContent.run(menuSet);
+         
+            addMenuContent.run(menuContent);
             return true;
         } catch(err){
             console.error(err);  // then log it
@@ -67,6 +67,32 @@ class MenuContentModel {
             return false;        // return false to indicate failure
         }
     }
+
+    updateMenuContentByID (menuID, dishes) {
+        try {
+            const del_sql = `
+                DELETE FROM MenuContent
+                WHERE menuID = @menuID
+            `;
+            db.prepare(del_sql).run({menuID});
+
+            for (let item of dishes)
+            {
+                const update_sql = `
+                        INSERT INTO MenuContent
+                        VALUES (@menuID, @item)
+             
+                    `;
+                    db.prepare(update_sql).run({menuID, item});
+            }
+           
+            return true;
+        } catch (err) {          // if there was any error
+            console.error(err);  // then log it
+            return false;
+        }
+    }
+
 
     getMenuContentDish (menuID) {
         try {

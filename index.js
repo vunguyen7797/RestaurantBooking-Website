@@ -9,9 +9,9 @@ const { schemas, VALIDATION_OPTIONS } = require("./validators/allValidators");
 const redis = require('redis');
 const session = require('express-session');
 let ejs = require('ejs');
-let html = ejs.render('login.html');
+const shoppingCart = [];		//Shopping cart variable
 const PORT = 8001;
-
+const uuidV4 = require('uuid').v4; 
 
 let RedisStore = require('connect-redis')(session);
 let redisClient = redis.createClient();
@@ -107,6 +107,7 @@ app.post("/login", async (req, res) => {
 			console.log('Request send while waiting ' + req.session.loginRetry);
 		}, 30000);
 	}
+
 		
 		//res.sendStatus(429);
 
@@ -120,6 +121,7 @@ app.post("/login", async (req, res) => {
 	if (error) {
 		return res.sendStatus(400);
 	}
+	
 	else {
 		const { email, password } = value;
 		console.log(req.body);
@@ -150,7 +152,9 @@ app.post("/login", async (req, res) => {
 					req.session.address = user.address;
 					req.session.didVerifyEmail = user.didVerifyEmail;
 					console.log("User requested to login: " + req.session.username);
-					return res.redirect('success.html');
+					if (req.session.role === 0)
+						return res.redirect('admin-dishes');
+					return res.redirect('/');
 				});
 			} else {
 				return res.sendStatus(401);
@@ -164,7 +168,7 @@ app.post("/login", async (req, res) => {
 
 });
 
-app.post("/logout", async (req, res) => {
+app.get("/logout", async (req, res) => {
 	console.log("POST /logout");
 	try {
 		if (req.session) {
@@ -175,11 +179,11 @@ app.post("/logout", async (req, res) => {
 					return res.sendStatus(500);
 				}
 				else {
-					return res.redirect('login.html');
+					return res.redirect('/login');
 				}
 			});
 		} else {
-			return res.redirect('login.html');
+			return res.redirect('/login');
 		}
 
 	} catch (err) {
@@ -189,7 +193,13 @@ app.post("/logout", async (req, res) => {
 });
 
 app.get("/login", (req, res)=>{
-
+	if (req.session.isLoggedIn)
+	{
+		console.log("Already logged in");
+		if (req.session.role === 0)
+			return res.redirect('admin-dishes');
+		return res.redirect('/');
+	}
 	console.log("GET /login");
 	res.render("login");
 } );
@@ -231,19 +241,6 @@ app.get("/categories/:catID", (req, res)=>{
 	else {
 		res.sendStatus(404);
 	}
-
-
-
-	// const categories = menuCategoryModel.getMenuCategories();
-	// console.log(categories.length);
-	// if (categories.length > 0) {
-	// 	console.log("Render home page");
-	// 	res.render("homePage", { categories });
-	// } else {
-	// 	res.sendStatus(404);
-	// }
-
-
 } );
 
 app.get("/list-products", (req, res)=>{
@@ -258,11 +255,350 @@ app.get("/list-products", (req, res)=>{
 	}
 } );
 
-app.get("/contact", (req, res)=>{
+app.get("/checkout", (req, res)=>{
 
-	console.log("GET /contact")
-	res.render("contact", {});
+	console.log("GET /checkout")
+	res.render("checkoutPage", {});
 } );
+
+app.get("/admin-dishes", (req, res)=>{
+
+	console.log("GET /admin-dishes")
+
+	if ( !req.session || req.session.role !== 0 ) {
+		console.log('Session does not exist');
+        return res.redirect("/login"); // Forbidden
+	}
+
+	const allDishes = dishesModel.getDishes();
+	if (allDishes.length > 0){
+		res.render("adminDishes", {allDishes} );
+	}
+	else {
+		res.sendStatus(404);	
+}
+
+
+} );
+
+
+// display menuset managers
+app.get("/admin-menuset/cat", (req, res)=>{
+
+	console.log("GET /admin-menuset?categories");
+	if ( !req.session || req.session.role !== 0 ) {
+		console.log('Session does not exist');
+        return res.redirect('/login'); // Forbidden 
+    }
+
+	const categories = menuCategoryModel.getMenuCategories();
+	const dishes = dishesModel.getDishes();
+	let catName = "";
+	let menuSets = [];
+	let menuContents = [];
+
+	if (req.query.categories === '0')
+	{
+		res.render("adminMenuSet", {catName, menuSets, menuContents, categories, dishes});
+	}
+	else {
+		catName = menuCategoryModel.getCategoryName(req.query.categories);
+		console.log(catName);
+		menuSets = menuSetsModel.getAllMenuSet(req.query.categories);
+	
+		
+		if (menuSets.length > 0){
+			console.log(menuSets)
+			for (let i = 0; i < menuSets.length; i++){
+			
+				let dishData = dishesModel.getAllDishesByMenu(menuSets[i]['menuID']);
+				menuContents.push({key: menuSets[i]['menuID'], value: dishData});
+			}
+			console.log(menuContents[0].value);
+			console.log(menuContents.length);
+			res.render("adminMenuSet", {catName, menuSets, menuContents, categories, dishes});
+		}
+		else {
+			res.redirect("/admin-menuset/cat?categories=0");
+		}
+	}
+} );
+
+// display add menuset page
+app.get("/add-menuset", (req, res)=>{
+
+	console.log("GET /add-menuset");
+		if ( !req.session || req.session.role !== 0 ) {
+		console.log('Session does not exist');
+        return res.redirect('/login'); // Forbidden 
+    }
+	const categories = menuCategoryModel.getMenuCategories();
+	const dishes = dishesModel.getDishes();
+	res.render("addingMenuSet", {categories, dishes});
+} );
+
+// create a new menu set
+app.post("/add-menuset", (req, res)=>{
+
+	console.log("POST /add-menuset");
+	if ( !req.session || req.session.role !== 0 ) {
+		console.log('Session does not exist');
+		return res.redirect('/login'); // Forbidden 
+	}
+
+	console.log(req.body);
+
+	let menuID = uuidV4();
+
+	let {name, price, dish1, dish2, dish3, dish4, dish5, categories} = req.body;
+	let selectedDishes = [dish1, dish2, dish3, dish4, dish5];
+    price = parseFloat(price);
+	const numberDishes = 5;
+    const didCreateMenuSet = menuSetsModel.createMenuSet({
+		menuID,
+        name, numberDishes, price, categories
+    });
+
+    if (didCreateMenuSet) {
+
+		for (let i =0 ;i < 5; i++)
+		{
+			let dish = selectedDishes[i];
+			menuContentModel.addMenuContent({
+				menuID,
+				dish
+			});
+
+		}
+		res.redirect(`/admin-menuset/cat?categories=${categories}`);
+    } else {
+        res.sendStatus(500);
+    }
+} );
+
+// delete a menu set
+app.delete("/menuset/:menuID", (req, res) => {
+	console.log("DELETE /menuset");
+
+    if ( !req.session || req.session.role !== 0 ) {
+		console.log('Session does not exist');
+        return res.sendStatus(403); // Forbidden 
+    }
+	const menuID = req.params.menuID;
+
+    const didDeleteMenu = menuSetsModel.deleteMenuSet(
+		menuID
+    );
+
+    if (didDeleteMenu) {
+		
+		console.log('Delete menu successfully');
+		res.sendStatus(200);
+   
+    } else {
+        res.sendStatus(500);
+    }
+});
+
+// get a menu set
+app.get("/menuset/:menuID", (req, res) => {
+	console.log("GET /menuset");
+
+    if ( !req.session || req.session.role !== 0 ) {
+		console.log('Session does not exist');
+        return res.sendStatus(403); // Forbidden 
+    }
+	const menuID = req.params.menuID;
+
+    const menuSet = menuSetsModel.getMenuSetById(
+		menuID
+    );
+
+    if (menuSet) {
+		console.log(menuSet);
+		res.json(menuSet);
+    } else {
+        res.sendStatus(404);
+    }
+});
+
+// get a menu set
+app.get("/menuset/content/:menuID", (req, res) => {
+	console.log("GET /menuset/content");
+
+    if ( !req.session || req.session.role !== 0 ) {
+		console.log('Session does not exist');
+        return res.sendStatus(403); // Forbidden 
+    }
+	const menuID = req.params.menuID;
+
+    const menuContent = dishesModel.getAllDishesByMenu(menuID);
+
+    if (menuContent) {
+		console.log(menuContent);
+		res.json(menuContent);
+    } else {
+        res.sendStatus(404);
+    }
+});
+
+// Update menuset information
+app.post("/menuset/:menuID", (req, res) => {
+    if ( !req.session || req.session.role !== 0 ) {
+		console.log('Session does not exist');
+        return res.sendStatus(403); // Forbidden 
+    }
+	const menuID = req.params.menuID;
+
+	let { name, price, categories, dish1, dish2, dish3, dish4, dish5  } = req.body;
+	let dishes = [dish1, dish2, dish3, dish4, dish5];
+	console.log(dishes);
+    price = parseFloat(price);
+
+    const didUpdateMenuSet = menuSetsModel.updateMenuSetByID({
+		menuID,
+        name, price, categories
+    });
+
+	const didUpdateMenuContent = menuContentModel.updateMenuContentByID(menuID, dishes);
+
+    if (didUpdateMenuSet && didUpdateMenuContent) {
+        res.redirect(`/admin-menuset/cat?categories=${categories}`);
+    } else {
+        res.sendStatus(500);
+    }
+});
+
+// display add new dish page
+app.get("/add-dish", (req, res)=>{
+
+	console.log("GET /add-dish");
+	res.render("addingDish", {});
+} );
+
+// Get a specific dish
+app.get("/dishes/:dishID", (req, res) => {
+
+	if ( !req.session || req.session.role !== 0 ) {
+		console.log('Session does not exist');
+        return res.sendStatus(403); // Forbidden 
+    }
+
+	const {dishID} = req.params;
+	const dish = dishesModel.getDishByID(dishID);
+
+	if (dish) {
+		console.log(dish);
+		res.json(dish);
+	} else {
+		res.sendStatus(404);
+	}
+});
+
+// create new dish
+app.post("/dishes", (req, res) => {
+    if ( !req.session || req.session.role !== 0 ) {
+		console.log('Session does not exist');
+        return res.sendStatus(403); // Forbidden 
+    }
+	console.log(req.body);
+
+
+	let dishID = uuidV4();
+    let {name, description, price, dishType, photoUrl} = req.body;
+
+    price = parseFloat(price);
+
+    const didCreateDish = dishesModel.createDish({
+		dishID,
+        name, description, price, dishType, photoUrl
+    });
+
+    if (didCreateDish) {
+        res.redirect("/admin-dishes");
+    } else {
+        res.sendStatus(500);
+    }
+});
+
+// Update dish information
+app.post("/dishes/:dishID", (req, res) => {
+    if ( !req.session || req.session.role !== 0 ) {
+		console.log('Session does not exist');
+        return res.sendStatus(403); // Forbidden 
+    }
+	let dishID = req.params.dishID;
+	let { name, description, price, dishType, photoUrl } = req.body;
+
+    price = parseFloat(price);
+
+    const didUpdateDish = dishesModel.updateDishByID({
+		dishID,
+        name, description, price, dishType, photoUrl
+    });
+
+    if (didUpdateDish) {
+        res.redirect("/admin-dishes");
+    } else {
+        res.sendStatus(500);
+    }
+});
+
+// delete a single dish
+app.delete("/dishes/:dishID", (req, res) => {
+	console.log("DELETE /dishes");
+
+    if ( !req.session || req.session.role !== 0 ) {
+		console.log('Session does not exist');
+        return res.sendStatus(403); // Forbidden 
+    }
+	const dishID = req.params.dishID;
+
+    const didDeleteDish = dishesModel.deleteDish(
+		dishID
+    );
+
+    if (didDeleteDish) {
+		
+		console.log('Delete dish successfully');
+		res.sendStatus(200);
+   
+    } else {
+        res.sendStatus(500);
+    }
+});
+
+//Add dishes to shopping cart
+app.post("/addtocart/:userID", (req, res) => {
+	if(!req.session){
+		return res.redirect('/login'); // Forbidden
+	}
+
+	const userID = req.params;
+	const dishID = req.query;
+	const hasUser = false;
+	for(const item of shoppingCart){
+		if(shoppingCart[item].id === userID){
+			hasUser = true;
+			if(shoppingCart[item].dishes <= 7){
+				shoppingCart[item].dishes = shoppingCart[item].dishes + 1;
+				shoppingCart[item].dishID;
+			} else{
+				return res.sendStatus(400).send(JSON.stringify("Maximum limit of dishes have been reached."));
+			}
+			return res.sendStatus(200);
+		}
+	}
+	let itemObject = {
+		id : userID,
+		dishes: 1,
+		dishID
+	};
+	shoppingCart.push(itemObject);
+	console.log(shoppingCart.length);
+	return res.sendStatus(200);
+});
+
 
 app.listen(PORT, () => {
 	console.log(`Listening on port ${PORT}`);
