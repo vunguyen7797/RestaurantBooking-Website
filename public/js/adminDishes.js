@@ -16,29 +16,27 @@ for (let i = 0; i < dishLength; i++) {
         }
         else if (event.target.id === "edit") {
 
-
-
             event.preventDefault();
-            toggleModal();
+            toggleEditModal();
 
             const overlay = document.querySelector('.modal-overlay')
-            overlay.addEventListener('click', toggleModal)
+            overlay.addEventListener('click', toggleEditModal)
 
             let closemodal = document.getElementById('modal-close')
 
-            closemodal.addEventListener('click', toggleModal)
+            closemodal.addEventListener('click', toggleEditModal)
 
 
-            document.onkeydown = function (evt) {
-                evt = evt || window.event
-                let isEscape = false
-                if ("key" in evt) {
-                    isEscape = (evt.key === "Escape" || evt.key === "Esc")
+            document.onkeydown = function (e) {
+                e = e || window.event
+                let isEscapePressed = false
+                if ("key" in e) {
+                    isEscapePressed = (e.key === "Escape" || e.key === "Esc")
                 } else {
-                    isEscape = (evt.keyCode === 27)
+                    isEscapePressed = (e.keyCode === 27)
                 }
-                if (isEscape && document.body.classList.contains('modal-active')) {
-                    toggleModal()
+                if (isEscapePressed && document.body.classList.contains('modal-active')) {
+                    toggleEditModal()
                 }
             };
 
@@ -68,7 +66,7 @@ for (let i = 0; i < dishLength; i++) {
     });
 }
 
-function toggleModal() {
+function toggleEditModal() {
     const body = document.querySelector('body')
     const modal = document.querySelector('.modal')
     modal.classList.toggle('opacity-0')

@@ -26,9 +26,6 @@
             </div>
 
 
-
-
-
             <div id="dishList" class="grid grid-cols-12 gap-12  py-8 mr-10 ml-10">
                 <% for( const dish of allDishes ) { %>   
                     <div id ='<%- dish.dishID %>' class="col-span-4 rounded hover:grow hover:shadow-lg h-45 bg-white-100 text-center">
@@ -39,8 +36,6 @@
 
 
                            <button id="del"  class="my-3 bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-4 rounded">Delete</button>
-                 
-                 
 
                     </div>
                     
@@ -57,9 +52,7 @@
                 
                 <div class="modal-container bg-white w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto">
                 
-           
 
-                <!-- Add margin if you want to see some of the overlay behind the modal-->
                 <div class="modal-content py-4 text-left px-6">
                     <!--Title-->
                     <div class="flex justify-between items-center pb-3">
