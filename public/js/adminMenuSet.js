@@ -23,26 +23,21 @@ for (let i = 0; i < menuSetsLength; i++) {
         else if (event.target.id === "edit") {
 
             event.preventDefault();
-            toggleModal();
+            toggleEditModal();
 
             const overlay = document.querySelector('.modal-overlay')
-            overlay.addEventListener('click', toggleModal)
+            overlay.addEventListener('click', toggleEditModal)
 
-            // let closemodal = document.getElementById('modal-close')
-
-            // closemodal.addEventListener('click', toggleModal)
-
-
-            document.onkeydown = function (evt) {
-                evt = evt || window.event
-                let isEscape = false
-                if ("key" in evt) {
-                    isEscape = (evt.key === "Escape" || evt.key === "Esc")
+            document.onkeydown = function (e) {
+                e = e || window.event
+                let isEscapePressed = false
+                if ("key" in e) {
+                    isEscapePressed = (e.key === "Escape" || e.key === "Esc")
                 } else {
-                    isEscape = (evt.keyCode === 27)
+                    isEscapePressed = (e.keyCode === 27)
                 }
-                if (isEscape && document.body.classList.contains('modal-active')) {
-                    toggleModal()
+                if (isEscapePressed && document.body.classList.contains('modal-active')) {
+                    toggleEditModal()
                 }
             };
 
@@ -57,9 +52,6 @@ for (let i = 0; i < menuSetsLength; i++) {
                     document.getElementById("categories").value = menuSetJson.category;
                     document.getElementById("price").value = menuSetJson.price;
 
-                   
-                
-                    
                         document.getElementById("dish1").value = menuContentJson[0].dishID;
                         document.getElementById("dish2").value = menuContentJson[1].dishID;
                         document.getElementById("dish3").value = menuContentJson[2].dishID;
@@ -80,7 +72,7 @@ for (let i = 0; i < menuSetsLength; i++) {
     });
 }
 
-function toggleModal() {
+function toggleEditModal() {
     const body = document.querySelector('body')
     const modal = document.querySelector('.modal')
     modal.classList.toggle('opacity-0')
