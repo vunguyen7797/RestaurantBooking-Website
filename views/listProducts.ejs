@@ -35,20 +35,26 @@
           </div>
         </nav>
 
-        <div class="grid grid-cols-12 gap-12 w-full py-8">
+        <div id="dishList" class="grid grid-cols-12 gap-12 w-full py-8">
             <% for( const dish of allDishes ) { %>   
-                <div class="col-span-3 rounded hover:grow hover:shadow-lg h-96 bg-gray-100 text-center mb-8">
-                    <img class="rounded" src="https://cdn.tgdd.vn/2020/07/CookRecipe/Avatar/muc-chien-gion-thumbnail.jpg" alt="">
+                <div id='<%- dish.dishID %>'  class="col-span-3 rounded hover:grow hover:shadow-lg h-96 bg-gray-100 text-center mb-8">
+                    <img class="rounded" src=<%= dish.photoUrl %> alt="">
                         <p class="pt-6 font-black text-l"><%= dish.name %></p>
                         <p class="py-6 font-black text-red-500 text-xl">$<%= dish.price %></p>
-                    <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 w-10/12 rounded">Add to cart</button>
+                    <button id="orderbtn" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 w-10/12 rounded">Add to cart</button>
                 </div>
                 
 
             <% } %>
         
         </div>
+
+        <script src="js/listProducts.js"> 
+          
+      </script>
     </div>
+
+    
 
     <%- include('partials/footer') %>
 

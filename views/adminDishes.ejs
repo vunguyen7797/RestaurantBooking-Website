@@ -29,7 +29,7 @@
             <div id="dishList" class="grid grid-cols-12 gap-12  py-8 mr-10 ml-10">
                 <% for( const dish of allDishes ) { %>   
                     <div id ='<%- dish.dishID %>' class="col-span-4 rounded hover:grow hover:shadow-lg h-45 bg-white-100 text-center">
-                        <img class="rounded"  src="https://cdn.tgdd.vn/2020/07/CookRecipe/Avatar/muc-chien-gion-thumbnail.jpg" alt="">
+                      <img class="rounded" src=<%= dish.photoUrl %> alt="">
                             <p class="pt-3 font-black text-s"><%= dish.name %></p>
                             <p class="py-3 font-black text-red-500 text-xl">$<%= dish.price %></p>
                             <button id="edit" class="my-3 bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-4 rounded">Edit</button>

@@ -7,39 +7,27 @@ class OrdersModel {
         this.db = db;
     }
 
-    createMenuSet (order) {
+    createOrder (order) {
         try{
+       
             const sql = `
                 INSERT INTO Orders
-                    (orderID, customer, bookingDate, serviceType, selectedMenu)
+                    (orderID, customer, bookingDate,  selectedMenu)
                 VALUES
-                    (@orderID, @customer, @bookingDate, @serviceType, @selectedMenu)
+                    (@orderID, @userID, @date,  @selectedMenu)
             `;
-            const createOrder = db.prepare(sql);
-
-            menuSet.orderID = uuidV4();
-            createOrder.run(order);
-            return true;
+            const prepCreateOrder = db.prepare(sql);
+          
+            order.orderID = uuidV4();
+            console.log(order);
+            prepCreateOrder.run(order);
+            return order.orderID;
         } catch(err){
             console.error(err);  // then log it
-            return false;        // return false to indicate failure
+            return {};        // return false to indicate failure
         }
     }
 
-    changeBookingDate (newBookingDate, orderID){
-        try{
-            const sql = `
-                UPDATE Orders
-                SET bookingDate = @newBookingDate
-                WHERE orderID = @orderID
-            `;
-            db.prepare(sql).run({newBookingDate, orderID});
-            return true;
-        } catch(err){
-            console.error(err);  // then log it
-            return false;        // return false to indicate failure
-        }
-    }
 
     changeServiceType (newServiceType, orderID){
         try{
@@ -71,7 +59,7 @@ class OrdersModel {
         }
     }
 
-    deleteMenuSet (orderID) {
+    deleteOrder (orderID) {
         try {
             const sql = `
                 DELETE FROM Orders
@@ -89,12 +77,24 @@ class OrdersModel {
         try {
             const sql = `
                 SELECT * FROM Orders
+                WHERE orderID = @orderID
             `;
-            db.prepare(sql).get({orderID});
-            return true;
+            return db.prepare(sql).get({orderID});
         } catch (err) {          // if there was any error
             console.error(err);  // then log it
-            return false;        // return false to indicate failure
+            return false;        // return empty object to indicate failure
+        }
+    }
+
+    getAllOrder () {
+        try {
+            const sql = `
+                SELECT * FROM Orders
+            `;
+            return db.prepare(sql).get({orderID});
+        } catch (err) {          // if there was any error
+            console.error(err);  // then log it
+            return [];        // return false to indicate failure
         }
     }
 
@@ -104,8 +104,7 @@ class OrdersModel {
                 SELECT orderID, selectedMenu FROM Orders
                 WHERE orderID = @orderID
             `;
-            db.prepare(sql).get({orderID});
-            return true;
+            return db.prepare(sql).get({orderID});
         } catch (err) {          // if there was any error
             console.error(err);  // then log it
             return false;        // return false to indicate failure
@@ -118,8 +117,7 @@ class OrdersModel {
                 SELECT orderID, serviceType FROM Orders
                 WHERE orderID = @orderID
             `;
-            db.prepare(sql).get({orderID});
-            return true;
+            return db.prepare(sql).get({orderID});
         } catch (err) {          // if there was any error
             console.error(err);  // then log it
             return false;        // return false to indicate failure
@@ -132,8 +130,7 @@ class OrdersModel {
                 SELECT orderID, bookingDate FROM Orders
                 WHERE orderID = @orderID
             `;
-            db.prepare(sql).get({orderID});
-            return true;
+            return db.prepare(sql).get({orderID});
         } catch (err) {          // if there was any error
             console.error(err);  // then log it
             return false;        // return false to indicate failure
