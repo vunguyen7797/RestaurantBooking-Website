@@ -110,7 +110,7 @@ class DishesModel {
             return db.prepare(sql).get({dishID});
         } catch (err) {          // if there was any error
             console.error(err);  // then log it
-            return;
+            return {};
         }
     }
 

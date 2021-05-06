@@ -40,10 +40,9 @@ CREATE TABLE IF NOT EXISTS Orders (
     orderID TEXT PRIMARY KEY,
     customer TEXT NOT NULL,
     bookingDate TEXT NOT NULL,
-    serviceType TEXT NOT NULL,
     selectedMenu TEXT NOT NULL,
     FOREIGN KEY (customer) REFERENCES Users(userID),
-    FOREIGN KEY (selectedMenu) REFERENCES MenuSets(user)
+    FOREIGN KEY (selectedMenu) REFERENCES MenuSets(menuID)
 );
 
 CREATE TABLE IF NOT EXISTS MenuCategories(
@@ -52,32 +51,7 @@ CREATE TABLE IF NOT EXISTS MenuCategories(
     photoUrl TEXT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS ShoppingCarts(
-    cartId TEXT,
-    userID TEXT,
-    totalPrice REAL DEFAULT 0.0,
-    FOREIGN KEY (userID) REFERENCES Users(userID)
-);
 
-CREATE TABLE IF NOT EXISTS ShoppingCartItem (
-    cartId TEXT,
-    itemId TEXT,
-    FOREIGN KEY (cartId) REFERENCES ShoppingCarts(cartId)
-);
-
-CREATE TABLE IF NOT EXISTS ShoppingMenuSetItem(
-    menuId,
-    itemId TEXT,
-    FOREIGN KEY (itemId) REFERENCES ShoppingCartItem(itemId),
-    FOREIGN KEY (menuId) REFERENCES MenuSets(menuID)
-);
-
-CREATE TABLE IF NOT EXISTS ShoppingSingleDishItem(
-    dishId,
-    itemId TEXT,
-    FOREIGN KEY (itemId) REFERENCES ShoppingCartItem(itemId),
-    FOREIGN KEY (dishId) REFERENCES Dishes(dishID)
-);
 
 -- INSERT INTO MenuCategories (catId, name, photoUrl) VALUES ("c1", "Wedding Party", "https://firebasestorage.googleapis.com/v0/b/qpv-face-scanner.appspot.com/o/webproject%2Fco-dam-cuoi.jpg?alt=media&token=b336f8fe-d574-4b3e-86bc-2c26f27a966e");
 -- INSERT INTO MenuCategories (catId, name, photoUrl) VALUES ("c2", "New House Party", "https://firebasestorage.googleapis.com/v0/b/qpv-face-scanner.appspot.com/o/webproject%2Ftiec-tan-gia-ngoai-troi.jpg?alt=media&token=05bb0fea-3f92-4604-b094-3642370d53da");

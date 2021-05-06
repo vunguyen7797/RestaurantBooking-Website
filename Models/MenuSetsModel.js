@@ -122,7 +122,7 @@ class MenuSetsModel {
             return db.prepare(sql).get({menuID});;
         } catch (err) {    // if there was any error
             console.error(err);  // then log it
-            return ;        // return false to indicate failure
+            return {} ;        // return false to indicate failure
         }
     }
 

@@ -12,9 +12,40 @@ let ejs = require('ejs');
 const shoppingCart = [];		//Shopping cart variable
 const PORT = 8001;
 const uuidV4 = require('uuid').v4; 
+const nodemailer = require("nodemailer");
 
 let RedisStore = require('connect-redis')(session);
 let redisClient = redis.createClient();
+
+const transporter = nodemailer.createTransport({
+    service: "Gmail",
+	host: "smtp.gmail.com",
+    auth: {
+		type: "login", // default
+		user: "hoangchau.culinary@gmail.com",
+		pass:"Hoangchau9999"
+    }
+});
+
+/* Return's true if the email sent succesfully and false otherwise */
+async function sendEmail (recipient, subject, text, html) {
+	const message = {
+	  from: process.env.EMAIL_ADDRESS,
+	  to: recipient,
+	  subject: subject,
+	  text: text,
+	  html: html
+	};
+	
+	try {
+	  await transporter.sendMail(message);
+	  return true;
+	} catch (err) {
+	  console.error(err);
+	  return false;
+	}
+}
+
 
 redisClient.on("error", function (err) {
 	console.log("Error " + err);
@@ -168,6 +199,7 @@ app.post("/login", async (req, res) => {
 
 });
 
+// User logout
 app.get("/logout", async (req, res) => {
 	console.log("POST /logout");
 	try {
@@ -192,6 +224,7 @@ app.get("/logout", async (req, res) => {
 	}
 });
 
+// Render the login page
 app.get("/login", (req, res)=>{
 	if (req.session.isLoggedIn)
 	{
@@ -201,6 +234,18 @@ app.get("/login", (req, res)=>{
 		return res.redirect('/');
 	}
 	console.log("GET /login");
+	res.render("login");
+} );
+
+// Check if user is login or not and retrieve userID
+app.get("/user", (req, res)=>{
+	if (req.session.isLoggedIn)
+	{
+		console.log("Already logged in");
+	
+		return res.send(req.session.userID);
+	}
+	console.log("GET /user");
 	res.render("login");
 } );
 
@@ -255,12 +300,7 @@ app.get("/list-products", (req, res)=>{
 	}
 } );
 
-app.get("/checkout", (req, res)=>{
-
-	console.log("GET /checkout")
-	res.render("checkoutPage", {});
-} );
-
+// Get dishes in admin mode
 app.get("/admin-dishes", (req, res)=>{
 
 	console.log("GET /admin-dishes")
@@ -281,8 +321,7 @@ app.get("/admin-dishes", (req, res)=>{
 
 } );
 
-
-// display menuset managers
+// Get menuset managers
 app.get("/admin-menuset/cat", (req, res)=>{
 
 	console.log("GET /admin-menuset?categories");
@@ -324,7 +363,7 @@ app.get("/admin-menuset/cat", (req, res)=>{
 	}
 } );
 
-// display add menuset page
+// render add menuset page
 app.get("/add-menuset", (req, res)=>{
 
 	console.log("GET /add-menuset");
@@ -569,35 +608,262 @@ app.delete("/dishes/:dishID", (req, res) => {
 });
 
 //Add dishes to shopping cart
-app.post("/addtocart/:userID", (req, res) => {
+app.post("/add-dishtocart/:userID", (req, res) => {
 	if(!req.session){
-		return res.redirect('/login'); // Forbidden
+		return res.redirect("/login");		//redirect user to login page
 	}
 
 	const userID = req.params;
-	const dishID = req.query;
-	const hasUser = false;
-	for(const item of shoppingCart){
-		if(shoppingCart[item].id === userID){
-			hasUser = true;
-			if(shoppingCart[item].dishes <= 7){
-				shoppingCart[item].dishes = shoppingCart[item].dishes + 1;
-				shoppingCart[item].dishID;
-			} else{
-				return res.sendStatus(400).send(JSON.stringify("Maximum limit of dishes have been reached."));
+	const dishID = req.query.dishID;
+	const dish = dishesModel.getDishByID(dishID);
+
+	if(JSON.stringify(dish) !== '{}'){
+		if(req.session.hasOwnProperty('totalDishes')){
+			if(req.session.totalDishes <= 7){
+				req.session.shoppingCart.push(dish);
+		
+				return res.send(200);
 			}
+			return res.send(400);
+		} else{
+			req.session.totalDishes = 1;
+			req.session.shoppingCart = [
+				dish
+			];
+
 			return res.sendStatus(200);
 		}
 	}
-	let itemObject = {
-		id : userID,
-		dishes: 1,
-		dishID
-	};
-	shoppingCart.push(itemObject);
-	console.log(shoppingCart.length);
-	return res.sendStatus(200);
+	return res.sendStatus(404);
+	
 });
+
+//Get all the dishes for user from shopping cart
+app.get("/addeditems/:userID", async (req, res) => {
+	if(!req.session){
+		return res.redirect('/login');
+	}
+
+	const userID = req.params;
+	const items = req.session.shoppingCart;
+	let dishesList = [];
+	let menuList = [];
+	let totalPrice = 0.0;
+	let title = "";
+	console.log(items);
+	if (items !== undefined && items.length >0)
+	{
+		// title = "YOUR CUSTOMIZED MENU SET";
+		// dishesList =items;
+		if (items[0].menuID !== undefined)
+		{
+			title = "YOUR SELECTED MENU SET";
+			menuList = items;
+		}
+		else{
+			title = "YOUR CUSTOMIZED MENU SET";
+			dishesList =items;
+		}
+
+		let sumPrice = 0.0;
+		for (let i =0; i < items.length; i++)
+			sumPrice = sumPrice + items[i].price;
+		totalPrice = sumPrice
+
+	}
+
+	res.render("checkoutPage", {dishesList,menuList, totalPrice, title});
+
+});
+
+//Add menusets to shopping cart
+app.post("/add-menutocart/:userID", (req, res) => {
+	if(!req.session){
+		return res.redirect("/login");		//redirect user to login page
+	}
+
+	const userID = req.params;
+	const menuID = req.query.menuID;
+	const menuSet = menuSetsModel.getMenuSetById(menuID);
+
+	if(JSON.stringify(menuSet) !== '{}'){
+		req.session.totalMenuSets = 1;
+			req.session.shoppingCart = [
+				menuSet
+			];
+
+			return res.sendStatus(200);
+	}
+	return res.sendStatus(404);
+	
+});
+
+//Create order
+app.post("/order/:userID", (req, res) => {
+	console.log("/POST /order");
+	if(!req.session){
+		return res.redirect("/login");		//redirect user to login page
+	}
+
+	const userID = req.params.userID;
+//	let {serviceType} = req.body;
+	let selectedMenu = req.session.shoppingCart[0].menuID;
+	let date = new Date().toLocaleString();
+	const orderObj = ({
+		userID,
+		date, selectedMenu
+	});
+	const orderID = ordersModel.createOrder(orderObj);
+	
+	if(orderID){
+		const text = `Thank you for ordering form Hoang Chau Culinary. Your order number is ${orderID}.`;
+		const html = (
+			"<h1 style=\"margin-bottom: 1rem;\">Thank you for ordering form Hoang Chau Culinary!</h1>" +
+			"<p>" +
+				`Your order number is ${orderID}` +
+			"</p>"
+		);
+		console.log(orderID);
+		const subject = `Your order number ${orderID}`;
+		const to = req.session.email;
+		sendEmail(to, subject, text, html);
+		delete req.session.shoppingCart;
+		delete req.session.totalMenuSets;
+	
+	}
+	return res.redirect('/');
+});
+
+//change service type
+app.post("/updateservicetype/:orderID", (req, res) => {
+	console.log("/POST /updateservicetype");
+	if(!req.session){
+		return res.sendStatus(403); // Forbidden
+	}
+	
+	const orderID = req.params;
+	const serviceType = req.query;
+	const didchangeServiceType = ordersModel.changeServiceType(serviceType, orderID);
+	if(didchangeServiceType){
+		res.sendStatus(200);
+	} else{
+		res.sendStatus(400);
+	}
+});
+
+//change selected menu
+app.post("/updateselectedmenu/:orderID", (req, res) => {
+	console.log("/POST /updateselectedmenu");
+	if(!req.session){
+		return res.sendStatus(403); // Forbidden
+	}
+	
+	const orderID = req.params;
+	const selectedMenu = req.query;
+	const didchangeSelectedMenu = ordersModel.changeSelectedMenu(selectedMenu, orderID);
+	if(didchangeSelectedMenu){
+		res.sendStatus(200);
+	} else{
+		res.sendStatus(400);
+	}
+});
+
+// Delete order
+app.delete("/order/:orderID", (req, res) => {
+	console.log("/DELETE /order");
+	if(!req.session){
+		return res.sendStatus(403); // Forbidden
+	}
+
+	const orderID = req.params;
+	const orderDeleted = ordersModel.deleteOrder(orderID);
+	if(orderDeleted){
+		res.sendStatus(200);
+	} else{
+		res.sendStatus(400);
+	}
+});
+
+// Get order
+app.get("/order", (req, res) => {
+	console.log("/GET /order");
+	if(!req.session && req.session.role !== 1){
+		return res.sendStatus(403); // Forbidden
+	}
+
+	const orders = ordersModel.getAllOrder();
+
+	if(orders.length > 0){
+		return res.json(orders).sendStatus(200);
+	}
+	return res.sendStatus(400);
+});
+
+// Get order by orderID
+app.get("/order/:orderID", (req, res) => {
+	console.log("/GET /order/:orderID");
+	if(!req.session){
+		return res.sendStatus(403); // Forbidden
+	}
+
+	const orderID = req.params;
+	const orders = ordersModel.getOrder(orderID);
+
+	if(orders){
+		return res.json(orders).sendStatus(200);
+	}
+	return res.sendStatus(400);
+});
+
+// Get selected menu
+app.get("/orderselectedmenu/:orderID", (req, res) => {
+	console.log("/GET /orderselectedmenu/:orderID");
+	if(!req.session){
+		return res.sendStatus(403); // Forbidden
+	}
+
+	const orderID = req.params;
+	const order = ordersModel.getSelectedMenu(orderID);
+
+	if(order){
+		return res.json(order).sendStatus(200);
+	}
+	return res.sendStatus(400);
+});
+
+// Get service type
+app.get("/orderservicetype/:orderID", (req, res) => {
+	console.log("/GET /orderservicetype/:orderID");
+	if(!req.session){
+		return res.sendStatus(403); // Forbidden
+	}
+
+	const orderID = req.params;
+	const serviceType = ordersModel.getServiceType(orderID);
+
+	if(serviceType){
+		return res.json(serviceType).sendStatus(200);
+	}
+	return res.sendStatus(400);
+});
+
+// Get booking date
+app.get("/orderbooking/:orderID", (req, res) => {
+	console.log("/GET /orderbooking/:orderID");
+	if(!req.session){
+		return res.sendStatus(403); // Forbidden
+	}
+
+	const orderID = req.params;
+	const booking = ordersModel.getBookingDate(orderID);
+
+	if(booking){
+		return res.json(booking).sendStatus(200);
+	}
+	return res.sendStatus(400);
+});
+
+
 
 
 app.listen(PORT, () => {
