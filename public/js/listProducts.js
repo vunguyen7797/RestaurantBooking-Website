@@ -18,7 +18,9 @@
                                     {
                                        alert("Added To Shopping Cart");
                                     }
-                                  
+                                  else{
+                                    alert("You have reached the maximum items");
+                                  }
                             });
                         }
                         else{

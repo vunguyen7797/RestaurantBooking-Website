@@ -21,16 +21,16 @@
          
               <h3 class="font-semibold text-center text-gray-600 text-xs uppercase w-1/5 text-center">Price</h3>
             </div>
-
+            <div id="menuList">
             <% for( const menu of menuList ) { %>   
            
-              <div class="flex items-center hover:bg-gray-100 -mx-8 px-6 py-5">
+              <div id="<%- menu.menuID %>" class="flex items-center hover:bg-gray-100 -mx-8 px-6 py-5">
                 <div class="flex w-4/5"> 
                
                   <div class="flex flex-col justify-between ml-4 flex-grow">
                     <span class="font-bold text-xl"><%= menu.name %></span>
                     <span class="text-red-500 text-l"><%= menu.categories %></span>
-                    <a href="#" class="font-semibold hover:text-red-500 text-gray-500 text-xs">Remove</a>
+                    <a id="removeMenuBtn" font-semibold hover:text-red-500 text-gray-500 text-xs">Remove</a>
                   </div>
                 </div>
             
@@ -38,15 +38,13 @@
                 <span class="text-center w-1/5 font-semibold text-xl">$<%= menu.price %></span>
               </div>
 
-
-
-
               <% } %>
-
+            </div>
+              <div id="dishList">
             <% for( const dish of dishesList ) { %>   
 
              
-                      <div class="flex items-center hover:bg-gray-100 -mx-8 px-6 py-5">
+                      <div id='<%- dish.dishID %>' class="flex items-center hover:bg-gray-100 -mx-8 px-6 py-5">
                         <div class="flex w-4/5"> 
                           <div class="w-20">
                             <img class="h-24" src=<%= dish.photoUrl %> alt="">
@@ -54,7 +52,7 @@
                           <div class="flex flex-col justify-between ml-4 flex-grow">
                             <span class="font-bold text-sm"><%= dish.name %></span>
                             <span class="text-red-500 text-xs"><%= dish.dishType %></span>
-                            <a href="#" class="font-semibold hover:text-red-500 text-gray-500 text-xs">Remove</a>
+                            <a id="removeDishBtn" class="font-semibold hover:text-red-500 text-gray-500 text-xs">Remove</a>
                           </div>
                         </div>
                     
@@ -64,6 +62,7 @@
   
 
               <% } %>
+            </div>
                  <br><br>   
     
            
@@ -80,23 +79,83 @@
             <h1 class="font-semibold text-2xl border-b pb-8">TOTAL COST</h1>
             
             <span class="text-2xl">$<%= totalPrice %></span>
-            
-          
-         
-
               <button id = "createorder" class="bg-red-500 mt-8 font-semibold hover:bg-black-600 py-3 text-sm text-white w-full">CREATE ORDER</button>
            
-         
-    
         </div>
       </div>
      <!-- <script scr="/js/checkout.js"></script> -->
 
-  
     </div>
 
     <script>
       // This is temporary solution
+
+         
+          let dishes = document.getElementById("dishList").children;
+          let dishesLength = document.getElementById("dishList").children.length;
+            
+          for (let i = 0; i < dishesLength; i++) {
+          
+          document.getElementById(dishes[i].id).addEventListener("click",  async function (event) {
+                    if (event.target.id === "removeDishBtn")
+                    {
+                    
+                        const response = await fetch(`/user`, { "method": "GET" });
+                        if (response.status === 200)
+                        {
+                     
+                            response.text().then( async function (text) {
+                                const response = await fetch(`/add-dishtocart/${text}?dishID=${dishes[i].id}&dishIndex=${i}`, { "method": "DELETE" });
+                                    if (response.status === 200)
+                                    {
+                                      window.location.reload();
+                                       alert(`Deleted ${dishes[i].name}  From Shopping Cart`);
+                                    }
+                                  else{
+                                    alert("Cannot delete");
+                                  }
+                            });
+                        }
+                        else{
+                         alert(response.status);
+                        }
+                    }
+                });
+   
+        }
+        
+
+        let menus = document.getElementById("menuList").children;
+          let menusLength = document.getElementById("menuList").children.length;
+            
+          for (let i = 0; i < menusLength; i++) {
+          
+          document.getElementById(menus[i].id).addEventListener("click",  async function (event) {
+                    if (event.target.id === "removeMenuBtn")
+                    {
+                    
+                        const response = await fetch(`/user`, { "method": "GET" });
+                        if (response.status === 200)
+                        {
+                     
+                            response.text().then( async function (text) {
+                                const response = await fetch(`/add-menutocart/${text}`, { "method": "DELETE" });
+                                    if (response.status === 200)
+                                    {
+                                      window.location.reload();
+                                       alert(`Deleted ${menusLength[i].name}  From Shopping Cart`);
+                                    }
+                                  else{
+                                    alert("Cannot delete");
+                                  }
+                            });
+                        }
+                        else{
+                         alert(response.status);
+                        }
+                    }
+                });
+        }
  
        document.getElementById("createorder").addEventListener("click",  async function (event) {
             
@@ -109,12 +168,17 @@
                                if (response.status === 200)
                                {
                                  alert("Order created. Please check your email.");
+                                 window.location.href="/";
+
+                               } 
+                               else
+                               {
+                                alert("Order failed. Please check again!");
                                }
-                             
                        });
                    }
                    else{
-                   alert(response.status);
+                      alert(response.status);
                    }
                
            });

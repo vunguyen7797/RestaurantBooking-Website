@@ -41,8 +41,7 @@ CREATE TABLE IF NOT EXISTS Orders (
     customer TEXT NOT NULL,
     bookingDate TEXT NOT NULL,
     selectedMenu TEXT NOT NULL,
-    FOREIGN KEY (customer) REFERENCES Users(userID),
-    FOREIGN KEY (selectedMenu) REFERENCES MenuSets(menuID)
+    FOREIGN KEY (customer) REFERENCES Users(userID)
 );
 
 CREATE TABLE IF NOT EXISTS MenuCategories(
