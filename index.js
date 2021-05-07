@@ -1,5 +1,5 @@
 "use strict";
-
+require("dotenv").config();
 const express = require("express");
 const app = express();
 const path = require("path");
@@ -19,11 +19,11 @@ let redisClient = redis.createClient();
 
 const transporter = nodemailer.createTransport({
     service: "Gmail",
-	host: "smtp.gmail.com",
+
     auth: {
-		type: "login", // default
-		user: "hoangchau.culinary@gmail.com",
-		pass:"Hoangchau9999"
+		
+		user: process.env.EMAIL_ADDRESS,
+		pass:process.env.EMAIL_PASSWORD
     }
 });
 
@@ -239,14 +239,16 @@ app.get("/login", (req, res)=>{
 
 // Check if user is login or not and retrieve userID
 app.get("/user", (req, res)=>{
-	if (req.session.isLoggedIn)
+	if (!req.session.isLoggedIn)
 	{
-		console.log("Already logged in");
-	
-		return res.send(req.session.userID);
+		console.log("GET /user");
+		res.sendStatus(404);
+		
 	}
-	console.log("GET /user");
-	res.render("login");
+	console.log("Already logged in---");
+
+	return res.send(req.session.userID);
+
 } );
 
 // Display the categories on the home pages
@@ -619,9 +621,9 @@ app.post("/add-dishtocart/:userID", (req, res) => {
 
 	if(JSON.stringify(dish) !== '{}'){
 		if(req.session.hasOwnProperty('totalDishes')){
-			if(req.session.totalDishes <= 7){
+			if(req.session.totalDishes < 7){
 				req.session.shoppingCart.push(dish);
-		
+				req.session.totalDishes +=1;
 				return res.send(200);
 			}
 			return res.send(400);
@@ -634,6 +636,40 @@ app.post("/add-dishtocart/:userID", (req, res) => {
 			return res.sendStatus(200);
 		}
 	}
+	return res.sendStatus(404);
+	
+});
+
+//Delete dishes to shopping cart
+app.delete("/add-dishtocart/:userID", (req, res) => {
+	if(!req.session){
+		return res.redirect("/login");		//redirect user to login page
+	}
+
+	const userID = req.params;
+	const dishID = req.query.dishID;
+	const dishIndex = req.query.dishIndex;
+	let isFound = false;
+		if(req.session.hasOwnProperty('totalDishes')){
+
+			for (let i = 0; i < req.session.shoppingCart.length; i++)
+			{
+				if (req.session.shoppingCart[i].dishID === dishID)
+				{
+					req.session.shoppingCart.splice(i, 1);
+					isFound = true;
+				}
+			}
+
+			if (isFound){
+				req.session.totalDishes -= 1;
+				return res.sendStatus(200);
+				
+			}
+
+	
+		}
+	
 	return res.sendStatus(404);
 	
 });
@@ -676,6 +712,8 @@ app.get("/addeditems/:userID", async (req, res) => {
 
 });
 
+
+
 //Add menusets to shopping cart
 app.post("/add-menutocart/:userID", (req, res) => {
 	if(!req.session){
@@ -698,6 +736,23 @@ app.post("/add-menutocart/:userID", (req, res) => {
 	
 });
 
+//Delete menuset to shopping cart
+app.delete("/add-menutocart/:userID", (req, res) => {
+	if(!req.session){
+		return res.redirect("/login");		//redirect user to login page
+	}
+
+
+	if (req.session.shoppingCart.length > 0)
+	{	req.session.shoppingCart.pop();
+	
+		return res.sendStatus(200);
+	}
+	
+	return res.sendStatus(404);
+	
+});
+
 //Create order
 app.post("/order/:userID", (req, res) => {
 	console.log("/POST /order");
@@ -707,7 +762,23 @@ app.post("/order/:userID", (req, res) => {
 
 	const userID = req.params.userID;
 //	let {serviceType} = req.body;
-	let selectedMenu = req.session.shoppingCart[0].menuID;
+	//let selectedMenu = req.session.shoppingCart;
+	let arrayForDb = [];
+	console.log(req.session.shoppingCart)
+	for (let item in req.session.shoppingCart)
+	{
+		console.log("HELLO WORLD");
+		console.log(req.session.shoppingCart[item]);
+		if (req.session.shoppingCart[item].dishID !== undefined){
+		
+			arrayForDb.push(req.session.shoppingCart[item].dishID);
+		}
+		else if (req.session.shoppingCart[item].menuID !== undefined) {
+			arrayForDb.push(req.session.shoppingCart[item].menuID);
+		}
+	}
+
+	let selectedMenu = arrayForDb.toString();
 	let date = new Date().toLocaleString();
 	const orderObj = ({
 		userID,
@@ -729,9 +800,10 @@ app.post("/order/:userID", (req, res) => {
 		sendEmail(to, subject, text, html);
 		delete req.session.shoppingCart;
 		delete req.session.totalMenuSets;
-	
+		delete req.session.totalDishes;
+		return res.sendStatus(200);
 	}
-	return res.redirect('/');
+	return res.sendStatus(404);
 });
 
 //change service type
